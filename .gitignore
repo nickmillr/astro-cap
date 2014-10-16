@@ -2,3 +2,5 @@
 .warehouse
 .ipynb_checkpoints
 nohup.out
+*.mp4
+*.ensemble
