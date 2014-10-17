@@ -278,6 +278,7 @@ def kiraout_to_xml(theuuid):
 
     storystart = re.compile("^\((\w+)")
     storyend = re.compile("^\)(\w+)")
+    illegalstart = re.compile("^-")
 
     for line in store:
         if storystart.match(line):
@@ -300,7 +301,11 @@ def kiraout_to_xml(theuuid):
         else:
             chunks = re.split("=", line)
             if len(chunks) == 2:
-                xmlfile.write("<value %s=\"%s\" />\n" %(re.sub("\,* ","_",chunks[0].strip()), chunks[1].strip()))
+                # xml attributes can't begin with punctuation or a digit. Make sure we abide by that rule.
+                if re.match("^\s*[a-zA-Z]", chunks[0]):
+                    xmlfile.write("<value %s=\"%s\" />\n" %(re.sub("\,* ","_",chunks[0].strip()), chunks[1].strip()))
+                else:
+                    xmlfile.write(line)
             else:
                 xmlfile.write(line)
 
