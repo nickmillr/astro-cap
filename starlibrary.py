@@ -182,12 +182,21 @@ def vis_story_3d(story_list):
 def premain(startn):
     """Run a plummer model for 10 dynamical times and return the number of stars remaining."""
     from subprocess import Popen, PIPE
+    from starlibrary import parse_output, extract_particle_dynamics
+    import random
+    
+    seed = random.randint(0,9999999999)
     
     print "running %d particles" % startn
     cmds = []
 
-    cmds.append(["makeplummer", "-n", "%d"%startn, "-i"])
-    cmds.append(["kira", "-t", "10", "-d", "1", "-D", "2", "-n", "10", "-q", "0.5", "-G", "2"])
+    cmds.append(["makeking", "-n", "%d"%startn, "-w", "5", "-i",  "-u", "-s", "%d"%seed])
+    cmds.append(["makemass", "-f", "2", "-l", "0.1,", "-u", "20"])
+    cmds.append(["makesecondary", "-f", "0.1", "-l", "0.25"])
+    cmds.append(["makebinary", "-l", "1", "-u", "10"])
+    cmds.append(["scale", "-m", "1", "-e", "-0.25", "-q", "0.5"]) 
+    cmds.append(["kira", "-t", "100", "-d", "1", "-D", "2", "-f", "0.3", "-n", "10", "-q", "0.5", "-G", "2", "-B"])
+
     procs = []
     for index, cmd in enumerate(cmds):
         print index, cmd
@@ -290,6 +299,7 @@ def kiraout_to_xml(theuuid):
 
     storystart = re.compile("^\((\w+)")
     storyend = re.compile("^\)(\w+)")
+    illegalstart = re.compile("^-")
 
     for line in store:
         if storystart.match(line):
@@ -312,7 +322,12 @@ def kiraout_to_xml(theuuid):
         else:
             chunks = re.split("=", line)
             if len(chunks) == 2:
-                xmlfile.write("<value %s=\"%s\" />\n" %(re.sub("\,* ","_",chunks[0].strip()), chunks[1].strip()))
+		# xmlfile.write("<value %s=\"%s\" />\n" %(re.sub("\,* ","_",chunks[0].strip()), chunks[1].strip()))
+                # xml attributes can't begin with punctuation or a digit. Make sure we abide by that rule.
+		if re.match("^\s*[a-zA-Z]", chunks[0]):
+		     xmlfile.write("<value %s=\"%s\" />\n" %(re.sub("\,* ","_",chunks[0].strip()), chunks[1].strip()))
+		else:
+                     xmlfile.write(line)
             else:
                 xmlfile.write(line)
 
