@@ -19,6 +19,7 @@ import uuid
 import glob
 import pickle
 #import pylab as plt
+import random
 
 
 warehousepath = ".warehouse/"   
@@ -47,6 +48,9 @@ class Story:
 # <set up the Run>
 class Run:
     def __init__(self, kingmodel=True, w0=1.5, nstars=2500, masstype=1, runlength=100, exponent=-2.35, binarypercent=.1, binarypoplower = 1.0, binarypopupper = 10):
+
+        # random seed
+        self.seed = random.randint(0,9999999999)
 
         self.kingmodel = kingmodel
         self.w0 = w0
@@ -593,6 +597,7 @@ def single_run(therun):
         cmds.append(["makeking",
                       "-n", "%d"%therun.nstars,
                       "-w", "%3.1f"%therun.w0,
+                      "-s", "%d"%therun.seed,
                       "-i"])
     else:
         cmds.append(["makeplummer",
@@ -603,6 +608,7 @@ def single_run(therun):
                   "-f", "%d"%therun.masstype,
                   "-l", "%f"%therun.lowerlimit,
                   "-u", "%f"%therun.upperlimit,
+                  "-s", "%d"%therun.seed,
                   "-i"])
 
     cmds.append(["makesecondary",
